@@ -24,9 +24,14 @@ class SELCavity(Cavity):
         rack_object,
     ):
         super().__init__(cavity_num=cavity_num, rack_object=rack_object)
-        self._q_waveform_pv: Optional[PV] = None
-        self._i_waveform_pv: Optional[PV] = None
-        self._sel_poff_pv: Optional[PV] = None
+        self.q_waveform_pv: str = self.pv_addr("CTRL:QWF")
+        self._q_waveform_pv_obj: Optional[PV] = None
+
+        self.i_waveform_pv: str = self.pv_addr("CTRL:IWF")
+        self._i_waveform_pv_obj: Optional[PV] = None
+
+        self.sel_poff_pv: str = self.pv_addr("SEL_POFF")
+        self._sel_poff_pv_obj: Optional[PV] = None
 
         self.logger = custom_logger(f"{self} SEL Phase Opt Logger")
         self.logfile = (
@@ -39,26 +44,26 @@ class SELCavity(Cavity):
         self.logger.addHandler(self.file_handler)
 
     @property
-    def sel_poff_pv(self) -> PV:
-        if not self._sel_poff_pv:
-            self._sel_poff_pv = PV(self.pv_addr("SEL_POFF"))
-        return self._sel_poff_pv
+    def sel_poff_pv_obj(self) -> PV:
+        if not self._sel_poff_pv_obj:
+            self._sel_poff_pv_obj = PV(self.sel_poff_pv)
+        return self._sel_poff_pv_obj
 
     @property
     def sel_phase_offset(self):
-        return self.sel_poff_pv.get()
+        return self.sel_poff_pv_obj.get()
 
     @property
     def i_waveform(self):
-        if not self._i_waveform_pv:
-            self._i_waveform_pv = PV(self.pv_addr("CTRL:IWF"))
-        return self._i_waveform_pv.get()
+        if not self._i_waveform_pv_obj:
+            self._i_waveform_pv_obj = PV(self.i_waveform_pv)
+        return self._i_waveform_pv_obj.get()
 
     @property
     def q_waveform(self):
-        if not self._q_waveform_pv:
-            self._q_waveform_pv = PV(self.pv_addr("CTRL:QWF"))
-        return self._q_waveform_pv.get()
+        if not self._q_waveform_pv_obj:
+            self._q_waveform_pv_obj = PV(self.q_waveform_pv)
+        return self._q_waveform_pv_obj.get()
 
     def straighten_cheeto(self) -> bool:
         """
@@ -103,7 +108,7 @@ class SELCavity(Cavity):
                 f"{prefix}{current_time}{self}{suffix}  step: {step:5.2f} chi^2: {chisum:.2g}"
             )
 
-            self.sel_poff_pv.put(startVal + step)
+            self.sel_poff_pv_obj.put(startVal + step)
             return large_step
 
         else:
