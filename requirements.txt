@@ -1,0 +1,14 @@
+typing
+numpy
+scipy
+pyyaml
+pydantic
+h5py
+requests
+matplotlib
+setuptools
+meme
+qtpy
+pydm
+scikit-learn
+lcls-tools @ git+https://github.com/slaclab/lcls-tools.git

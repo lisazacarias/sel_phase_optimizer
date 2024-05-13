@@ -7,10 +7,9 @@ Originally by J. Nelson, refactored by L. Zacarias
 
 import time
 
-from lcls_tools.common.controls.pyepics.utils import PV
+from lcls_tools.common.controls.pyepics.utils import PV, PVInvalidError
 from lcls_tools.superconducting.sc_linac import Cryomodule
 from lcls_tools.superconducting.sc_linac_utils import ALL_CRYOMODULES
-
 from sel_phase_linac import SEL_MACHINE
 
 HEARTBEAT_PV = PV("PHYS:SYS0:1:SC_SEL_PHAS_OPT_HEARTBEAT")
@@ -30,7 +29,10 @@ def run():
     for cm_name in ALL_CRYOMODULES:
         cm_obj: Cryomodule = SEL_MACHINE.cryomodules[cm_name]
         for cav_obj in cm_obj.cavities.values():
-            num_large_steps += 1 if cav_obj.straighten_cheeto() else 0
+            try:
+                num_large_steps += 1 if cav_obj.straighten_cheeto() else 0
+            except PVInvalidError as e:
+                cav_obj.logger.error(e)
         update_heartbeat(1)
     if num_large_steps > 5:
         print(
